@@ -12,6 +12,63 @@ typedef struct cell_phone {
   float minutes_of_charge;
 } phone; //phone 就是 struct cell_phone 的别名
 
+struct turtle {
+  char* name;
+  char* species;
+  int age;
+};
+
+void happy(struct turtle t) {
+  t.age = t.age + 1;
+  // 函数内部得到的是struct副本，所以外部传入的数据不会受影响
+}
+
+void happy1(struct turtle* t) {
+  (*t).age = (*t).age + 1;
+  // (*t) 不能写成*t，因为.的优先级更高
+  t->age = t->age + 1;
+}
+
+/**
+ * struct的嵌套
+ */
+struct species {
+  char* name;
+  int kinds;
+};
+
+struct fish {
+  char* name;
+  int age;
+  struct species breed;
+};
+
+struct node {
+  int data;
+  struct node* next;
+};
+
+/**
+ * 位字段
+ */
+struct {
+  unsigned int ab:1; //指定属性只占用一个二进制位
+  unsigned int cd:1;
+  unsigned int ef:1;
+  unsigned int gh:1;
+} synth;
+
+/**
+ * 弹性数组成员，在分配内存的时候再指定数组成员数
+ * 规则：
+ *  弹性成员的数组，必须是 struct 结构的最后一个属性
+ *  除了弹性数组成员，struct 结构必须至少还有一个其他属性
+ */
+struct vstring {
+  int len;
+  char chars[];
+};
+
 int main() {
   struct person p1; // 编译时为p1分配内存
   // 逐一对属性赋值
@@ -84,6 +141,41 @@ int main() {
   printf("a address %s\n", a.address);
   printf("b address %s\n", b.address);
 
+  /* ----------- struct指针 ----------- */
+  struct turtle myTurtle = {"MyTurtle", "sea turtle", 99};
+  happy(myTurtle);
+  printf("Age is %i\n", myTurtle.age);
+  happy1(&myTurtle);
+  printf("Age is %i\n", myTurtle.age);
+
+  /* ----------- struct的嵌套 ----------- */
+  struct fish shark = {"shark", 9, {"Selachimorpha", 500}};
+
+  struct species myBreed = {"Selachimorpha", 500};
+  struct fish shark1 = {"shark", 9, myBreed};
+
+  struct fish shark2 = {
+      .name = "shark",
+      .age = 1,
+      .breed = {"Selachimorpha", 500}
+  };
+
+  struct fish shark3 = {
+      .name = "shark",
+      .age = 1,
+      .breed.name = "Selachimorpha",
+      .breed.kinds = 500
+  };
+
+  printf("Shark's species is %s", shark.breed.name);
+
+  /* ----------- 位字段 ----------- */
+  synth.ab = 1;
+  synth.cd = 0;
+
+  /* ----------- 弹性数组成员 ----------- */
+  struct vstring* vs = malloc(sizeof(struct vstring) + 10 * sizeof(char));
+  vs->len = 10;
 
   return 0;
 }
